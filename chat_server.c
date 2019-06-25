@@ -11,7 +11,8 @@ chatServer newServer(char* srvIP, int port){
     int server_sock = newSocket();
     
     // Forcefully attaching socket to the port 8080 
-    if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, 
+    //if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, 
+    if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR ,
                                                   &opt, sizeof(opt))<0 ) 
     { 
         perror("ERROR Server:: setsockopt"); 
@@ -96,7 +97,7 @@ int startChat( chatServer* cs){
 			char buffer[1024] = {0};
 			while( 1) {
 				read( requests_sock , buffer, 1024); 
-    			printf("(%d)< %s", child, buffer);
+    			printf("(%d)< %s", requests_sock, buffer);
 				if ( strncmp(buffer,"exit",4) == 0 ) break;
 				memset(buffer,0,strlen(buffer));
     		}
