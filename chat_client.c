@@ -60,8 +60,8 @@ int startChat(int write_sock){
     while( 1){
 		printf(">");
 		fgets(buffer, 30, stdin);
-		if ( strncmp(buffer,"exit",4)==0) break;
 		send( write_sock , buffer, strlen(buffer) , 0);
+		if ( strncmp(buffer,"exit",4)==0) break;
     } 
     return 0; 
 }

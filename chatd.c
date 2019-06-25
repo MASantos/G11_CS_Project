@@ -23,11 +23,11 @@ int main(int argc, char const *argv[])
 	}
 	printf("Setting up server at IP:port %s:%d\n",serverIP, serverPort);
 
-    chatServer cserver = newServer(serverIP,serverPort);
+    chatServer cserver = newServer(serverIP,serverPort); //create srv socket, bind addr, enable listen (SBL)
     
-    startChat( cserver.requests );
+    startChat( &cserver );
 	
-	
+	close( cserver.socket);	
 	return 0; 
 } 
 

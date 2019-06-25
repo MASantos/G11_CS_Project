@@ -13,6 +13,7 @@
 //#include <arpa/inet.h>  //For Client: in OSX (*UNIX?) it's arpa/inet.h
 
 struct chatServer {
+	int socket;
 	int requests;
 	struct sockaddr_in address;
 };
@@ -25,9 +26,10 @@ int bindServer2Port(int server_sock, struct sockaddr_in* address);
 
 int startListening(int server_sock);
 
-int acceptRequests(int server_sock, struct sockaddr_in* address);
+int acceptConnections(int server_sock, struct sockaddr_in* address);
+int acceptRequests(chatServer* cs);
 
-int startChat(int sock);
+int startChat(chatServer* cs);
 
 #endif // END __CHAT_SERVER_H__ 
 

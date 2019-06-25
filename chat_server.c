@@ -27,8 +27,10 @@ chatServer newServer(char* srvIP, int port){
 	startListening(server_sock);
 
 	chatServer cs;
+	cs.socket = server_sock;
 	cs.address = address;
-	cs.requests = acceptRequests(server_sock, &address);
+	//cs.requests = acceptRequests(server_sock, &address);
+	cs.requests = -1;
 
 	return cs; 
 }
@@ -52,31 +54,57 @@ int startListening(int server_sock){
 	return 0;
 } 
 
-int acceptRequests(int server_sock, struct sockaddr_in* address_ptr){
-    int new_socket; 
+int acceptConnections(int server_sock, struct sockaddr_in* address_ptr){
+    int connect_socket; 
 	size_t addrlen = sizeof(*address_ptr);
-    if ( (new_socket = accept(server_sock, (struct sockaddr *)address_ptr,  
+    if ( (connect_socket = accept(server_sock, (struct sockaddr *)address_ptr,  
                        (socklen_t*)&addrlen)) <0 ) 
     { 
         perror("ERROR Server:: accept");
-		printf("DEBUG: Server:: accept: requests socket = %d\n",new_socket);	
+		printf("DEBUG: Server:: accept: requests socket = %d\n",connect_socket);	
         exit(EXIT_FAILURE); 
     }
-	return new_socket;
+	return connect_socket;
 }
 
-int startChat(int requests_sock){
-	if ( requests_sock < 0 ){
-		printf("ERROR: Server:: startChat: No line to server. Bailing out\n");
-		return -1;
-	}
+int acceptRequests(chatServer* cs){
+    int connect_socket = -1; 
+	size_t addrlen = sizeof(cs->address);
+    if ( (connect_socket = accept(cs->socket, (struct sockaddr *)&cs->address,  
+                       (socklen_t*)&addrlen)) <0 ) 
+    { 
+        perror("ERROR Server:: accept");
+		printf("DEBUG: Server:: accept: requests socket = %d\n",connect_socket);	
+        exit(EXIT_FAILURE); 
+    }
+	return connect_socket;
+	
+}
 
-    char buffer[1024] = {0}; 
-    while( 1) {
-		read( requests_sock , buffer, 1024); 
-    	printf("< %s", buffer);
-		memset(buffer,0,strlen(buffer));
-    }	
+//int startChat(int requests_sock){
+int startChat( chatServer* cs){
+	for(;;){
+		//int requests_sock = acceptConnections(cs->socket, &cs->address);
+		int requests_sock = acceptRequests(cs);
+		if ( requests_sock < 0 ){
+			printf("ERROR: Server:: startChat: No line to server. Bailing out\n");
+			return -1;
+		}
+		int child = -1;
+		if ( (child = fork() ) == 0 ){
+			close(cs->socket);
+			char buffer[1024] = {0};
+			while( 1) {
+				read( requests_sock , buffer, 1024); 
+    			printf("(%d)< %s", child, buffer);
+				if ( strncmp(buffer,"exit",4) == 0 ) break;
+				memset(buffer,0,strlen(buffer));
+    		}
+			close(requests_sock);
+			exit(0);
+    	}
+		close(requests_sock);
+    }
     return 0; 
 } 
 
