@@ -6,8 +6,7 @@
 
 #include <sys/types.h>
 #include <sys/uio.h>
-#include <unistd.h>
-
+#include <sys/wait.h>
 #include "chat_common.h"
 #include <netinet/in.h> //For Server: works as well in In OSX (*NIX?)
 //#include <arpa/inet.h>  //For Client: in OSX (*UNIX?) it's arpa/inet.h

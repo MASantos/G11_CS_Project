@@ -54,15 +54,28 @@ int startChat(int write_sock){
 		return -1;
 	}
 
-    //char msg[30]; 
-    char buffer[1024] = {0}; 
 	printf("Chat ready:\n"); 
-    while( 1){
-		printf(">");
-		fgets(buffer, 30, stdin);
-		send( write_sock , buffer, strlen(buffer) , 0);
-		if ( strncmp(buffer,"exit",4)==0) break;
-    } 
+	if ( fork() == 0 ){
+    	//sending to server child
+    	char buffer[1024] = {0}; 
+    	while( 1){
+			printf(">");
+			fgets(buffer, 30, stdin);
+			if( send( write_sock , buffer, strlen(buffer) , 0) < 0 ) break;
+			if ( strncmp(buffer,"exit",4)==0) break;
+    	}
+		exit(0); 
+	}
+	char buffer[2014] = {0};
+	int rd=0;
+	while( 1 ){
+    	//read from server child
+		if( (rd = read( write_sock, buffer, 1024) ) <= 0 ) break;
+    	printf("\n(%d:%d)< %s", write_sock, rd,buffer);
+		if ( strncmp(buffer,"exit",4) == 0 ) break;
+		memset(buffer,0,strlen(buffer));
+	}	
+	shutdown(write_sock,SHUT_RDWR);
     return 0; 
 }
 

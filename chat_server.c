@@ -85,19 +85,37 @@ int acceptRequests(chatServer* cs){
 //int startChat(int requests_sock){
 int startChat( chatServer* cs){
 	for(;;){
-		//int requests_sock = acceptConnections(cs->socket, &cs->address);
+		printf("Waiting for call...:\n"); 
 		int requests_sock = acceptRequests(cs);
 		if ( requests_sock < 0 ){
 			printf("ERROR: Server:: startChat: No line to server. Bailing out\n");
 			return -1;
 		}
+		printf("Chat ready:\n"); 
 		int child = -1;
 		if ( (child = fork() ) == 0 ){
+    		//read from client child
+			close(cs->socket);
+			char buffer[1024] = {0};
+			int rd = 0;
+			while( 1) {
+				if ( ( rd = read( requests_sock , buffer, 1024) ) <= 0 ) break; 
+    			printf("\n(%d:%d)< %s", requests_sock, rd,buffer);
+				if ( strncmp(buffer,"exit",4) == 0 ) break;
+				memset(buffer,0,strlen(buffer));
+    		}
+			close(requests_sock);
+			exit(0);
+    	}
+		if ( (child = fork() ) == 0 ){
+    		//write to client child
 			close(cs->socket);
 			char buffer[1024] = {0};
 			while( 1) {
-				read( requests_sock , buffer, 1024); 
-    			printf("(%d)< %s", requests_sock, buffer);
+				printf(">");
+				if( fgets( buffer, 1024,stdin) != NULL ) {
+					if( send(requests_sock,buffer,strlen(buffer),0) < 0 ) break;
+				} 
 				if ( strncmp(buffer,"exit",4) == 0 ) break;
 				memset(buffer,0,strlen(buffer));
     		}
@@ -105,6 +123,9 @@ int startChat( chatServer* cs){
 			exit(0);
     	}
 		close(requests_sock);
+		wait(&child);
+		shutdown(cs->socket,SHUT_RDWR);
+		exit(0);
     }
     return 0; 
 } 

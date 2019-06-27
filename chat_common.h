@@ -8,6 +8,7 @@
 #include <sys/socket.h> 
 #include <stdlib.h> 
 #include <string.h> 
+#include <unistd.h>
 
 #ifndef DEBUG
 #define DEBUG 0
